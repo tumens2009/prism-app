@@ -34,20 +34,6 @@ export class Alert {
   @Column({ nullable: true })
   alertName?: string;
 
-  // Configuration of the type
-  // TODO - Use type from frontend
-  /*
-  {
-    "type": "wms",
-    "serverLayerName": "ModisLST",
-    "baseUrl": "https://mongolia.sibelius-datacube.org:5000",
-    "wcsConfig": {
-      "scale": 0.02,
-      "offset": -273,
-      "pixelResolution": 64
-    }
-  }
-  */
   @Column({ type: 'jsonb' })
   alertConfig: AlertConfig;
 

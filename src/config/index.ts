@@ -23,12 +23,6 @@ import {
 } from './kyrgyzstan';
 
 import {
-  mongoliaConfig,
-  mongoliaRawLayers,
-  mongoliaRawTables,
-} from './mongolia';
-
-import {
   mozambiqueConfig,
   mozambiqueRawLayers,
   mozambiqueRawTables,
@@ -58,6 +52,20 @@ import {
   zimbabweRawTables,
 } from './zimbabwe';
 
+type Country =
+  | 'cambodia'
+  | 'global'
+  | 'indonesia'
+  | 'kyrgyzstan'
+  | 'mozambique'
+  | 'myanmar'
+  | 'namibia'
+  | 'rbd'
+  | 'tajikistan'
+  | 'zimbabwe';
+
+const DEFAULT: Country = 'myanmar';
+
 // Upload the boundary URL to S3 to enable the use of the API in a local environment.
 const DEFAULT_BOUNDARIES_FOLDER =
   'https://prism-admin-boundaries.s3.us-east-2.amazonaws.com';
@@ -86,12 +94,6 @@ const configMap = {
     rawLayers: kyrgyzstanRawLayers,
     rawTables: kyrgyzstanRawTables,
     defaultBoundariesFile: `${DEFAULT_BOUNDARIES_FOLDER}/kgz_admin_boundaries.json`,
-  },
-  mongolia: {
-    appConfig: mongoliaConfig,
-    rawLayers: mongoliaRawLayers,
-    rawTables: mongoliaRawTables,
-    defaultBoundariesFile: `${DEFAULT_BOUNDARIES_FOLDER}/mng_admin_boundaries.json`,
   },
   mozambique: {
     appConfig: mozambiqueConfig,

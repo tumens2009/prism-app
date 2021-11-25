@@ -203,7 +203,7 @@ export function getPrismUrl(): string {
   if (isLocalhost) {
     // Special case - if we're testing locally, then assume we are testing prism-mongolia
     // This is to ensure we don't pollute the database with localhost URLs
-    return 'https://prism-mongolia.org';
+    return 'https://prism.mmr.wfp.org';
   }
 
   return origin;
