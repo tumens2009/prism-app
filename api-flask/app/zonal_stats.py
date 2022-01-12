@@ -199,13 +199,13 @@ def calculate_stats(
     # Add function to calculate overlap percentage.
     add_stats = None
     if overlap_threshold:
-        def over_threshold_percentage(masked):
+        def percentage_over_threshold(masked):
             total = int(masked.count())
             over_threshold = int(
                 masked[masked > overlap_threshold].count()
             )
             return over_threshold / total
-        add_stats = {'over_threshold_percentage': over_threshold_percentage}
+        add_stats = {'percentage_over_threshold': percentage_over_threshold}
 
     try:
         stats_results = zonal_stats(
