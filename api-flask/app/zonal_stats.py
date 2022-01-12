@@ -8,6 +8,8 @@ from urllib.parse import urlencode
 from app.caching import cache_file, get_json_file
 from app.timer import timed
 
+# import numpy as np
+
 import rasterio
 
 from rasterstats import zonal_stats
@@ -174,7 +176,8 @@ def calculate_stats(
     stats=DEFAULT_STATS,
     prefix='stats_',
     geojson_out=False,
-    wfs_response=None
+    wfs_response=None,
+    overlap_threshold=None,
 ):
     """Calculate stats."""
     if group_by:
@@ -194,13 +197,48 @@ def calculate_stats(
         prefix = None
 
     try:
-        stats = zonal_stats(
+        stats_results = zonal_stats(
             stats_input,
             geotiff,
             stats=stats,
             prefix=prefix,
             geojson_out=geojson_out
         )
+        if overlap_threshold:
+            def over_threshold_percentage(masked):
+                total = int(masked.count())
+                over_threshold = int(
+                    masked[masked > 2000].count()
+                )
+                print([total, over_threshold])
+                return over_threshold / total
+
+            overlap_results = zonal_stats(
+                stats_input,
+                geotiff,
+                stats=['count'],
+                prefix=prefix,
+                geojson_out=geojson_out,
+                add_stats={'over_threshold_percentage': over_threshold_percentage},
+            )
+
+            print(overlap_results)
+
+            # with rasterio.open(geotiff) as src:
+            #     affine = src.transform
+            #     threshold_geotiff = src.read()
+            #     threshold_geotiff[threshold_geotiff > overlap_threshold] = np.NaN
+
+            #     overlap_results = zonal_stats(
+            #         stats_input,
+            #         threshold_geotiff,
+            #         stats=['count'],
+            #         prefix=prefix,
+            #         geojson_out=geojson_out,
+            #         affine=affine,
+            #     )
+            #     print(overlap_results)
+
     except rasterio.errors.RasterioError as e:
         logger.error(e)
         raise InternalServerError('An error occured calculating statistics.')
@@ -210,13 +248,14 @@ def calculate_stats(
 
         # Add statistics as feature property fields.
         features = [{**z,  'properties': {**z.get('properties'), **s}}
-                    for z, s in zip(zones_features, stats)]
+                    for z, s in zip(zones_features, stats_results)]
 
         # Return stats as geojson array of features.
         return features
 
     if not geojson_out:
         feature_properties = _extract_features_properties(zones)
-        stats = [{**properties, **stat}
-                 for stat, properties in zip(stats, feature_properties)]
-    return stats
+        stats_results = [
+            {**properties, **stat} for stat, properties in zip(stats_results, feature_properties)
+        ]
+    return stats_results

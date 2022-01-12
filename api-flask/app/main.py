@@ -8,6 +8,7 @@ from app.caching import cache_file, cache_geojson
 from app.database.alert_database import AlertsDataBase
 from app.database.alert_model import AlchemyEncoder, AlertModel
 from app.errors import handle_error, make_json_error
+from app.kobo import get_form_responses, parse_datetime_params
 from app.timer import timed
 from app.zonal_stats import calculate_stats, get_wfs_response
 
@@ -16,8 +17,6 @@ from flask import Flask, Response, json, jsonify, request
 from flask_caching import Cache
 
 from flask_cors import CORS
-
-from kobo import get_form_responses, parse_datetime_params
 
 import rasterio
 
@@ -52,7 +51,8 @@ def _calculate_stats(zones,
                      prefix,
                      group_by,
                      geojson_out,
-                     wfs_response):
+                     wfs_response,
+                     overlap_threshold):
     """Calculate stats."""
     return calculate_stats(
         zones,
@@ -61,7 +61,8 @@ def _calculate_stats(zones,
         prefix=prefix,
         group_by=group_by,
         geojson_out=geojson_out,
-        wfs_response=wfs_response
+        wfs_response=wfs_response,
+        overlap_threshold=overlap_threshold
     )
 
 
@@ -76,6 +77,7 @@ def stats():
     geotiff_url = data.get('geotiff_url')
     zones_url = data.get('zones_url')
     zones_geojson = data.get('zones')
+    overlap_threshold = data.get('overlap_threshold')
 
     if geotiff_url is None:
         logger.error('Received {}'.format(data))
@@ -131,7 +133,8 @@ def stats():
         prefix='stats_',
         group_by=group_by,
         geojson_out=geojson_out,
-        wfs_response=wfs_response
+        wfs_response=wfs_response,
+        overlap_threshold=overlap_threshold
     )
 
     return jsonify(features)
@@ -251,6 +254,8 @@ def stats_demo():
 
     geojson_out = strtobool(geojson_out)
 
+    overlap_threshold = 0.1
+
     features = _calculate_stats(
         zones,
         geotiff,
@@ -258,7 +263,8 @@ def stats_demo():
         prefix='stats_',
         group_by=group_by,
         geojson_out=geojson_out,
-        wfs_response=None
+        wfs_response=None,
+        overlap_threshold=overlap_threshold
     )
 
     # TODO - Properly encode before returning. Mongolian characters are returned as hex.
