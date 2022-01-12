@@ -196,48 +196,26 @@ def calculate_stats(
         stats_input = [s.get('geom') for s in zones]
         prefix = None
 
+    # Add function to calculate overlap percentage.
+    add_stats = None
+    if overlap_threshold:
+        def over_threshold_percentage(masked):
+            total = int(masked.count())
+            over_threshold = int(
+                masked[masked > overlap_threshold].count()
+            )
+            return over_threshold / total
+        add_stats = {'over_threshold_percentage': over_threshold_percentage}
+
     try:
         stats_results = zonal_stats(
             stats_input,
             geotiff,
             stats=stats,
             prefix=prefix,
-            geojson_out=geojson_out
+            geojson_out=geojson_out,
+            add_stats=add_stats,
         )
-        if overlap_threshold:
-            def over_threshold_percentage(masked):
-                total = int(masked.count())
-                over_threshold = int(
-                    masked[masked > 2000].count()
-                )
-                print([total, over_threshold])
-                return over_threshold / total
-
-            overlap_results = zonal_stats(
-                stats_input,
-                geotiff,
-                stats=['count'],
-                prefix=prefix,
-                geojson_out=geojson_out,
-                add_stats={'over_threshold_percentage': over_threshold_percentage},
-            )
-
-            print(overlap_results)
-
-            # with rasterio.open(geotiff) as src:
-            #     affine = src.transform
-            #     threshold_geotiff = src.read()
-            #     threshold_geotiff[threshold_geotiff > overlap_threshold] = np.NaN
-
-            #     overlap_results = zonal_stats(
-            #         stats_input,
-            #         threshold_geotiff,
-            #         stats=['count'],
-            #         prefix=prefix,
-            #         geojson_out=geojson_out,
-            #         affine=affine,
-            #     )
-            #     print(overlap_results)
 
     except rasterio.errors.RasterioError as e:
         logger.error(e)
