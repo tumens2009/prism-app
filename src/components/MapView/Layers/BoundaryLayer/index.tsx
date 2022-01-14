@@ -6,13 +6,14 @@ import union from '@turf/union';
 import { GeoJSONLayer } from 'react-mapbox-gl';
 import MapboxGL from 'mapbox-gl';
 // import { Feature, MultiPolygon, Polygon, Properties } from '@turf/helpers';
-import turf from '@turf/turf';
+import turf, { FeatureCollection, MultiPolygon, Polygon } from '@turf/turf';
 import { showPopup } from '../../../../context/tooltipStateSlice';
 import { BoundaryLayerProps } from '../../../../config/types';
 import { LayerData } from '../../../../context/layers/layer-data';
 import { layerDataSelector } from '../../../../context/mapStateSlice/selectors';
 import { toggleSelectedBoundary } from '../../../../context/mapSelectionLayerStateSlice';
 import { GeoJsonBoundary } from '../raster-utils';
+import { polygonDissolve } from '../layer-utils';
 
 function onToggleHover(cursor: string, targetMap: MapboxGL.Map) {
   // eslint-disable-next-line no-param-reassign, fp/no-mutation
@@ -54,15 +55,12 @@ function BoundaryLayer({ layer }: { layer: BoundaryLayerProps }) {
       const existingData = get(acc, [levelKey]);
       // console.log({ levelKey, existingData });
       try {
-        const newAcc = existingData
-          ? {
-              ...acc,
-              [levelKey]: union(existingData, feature) as GeoJsonBoundary,
-            }
-          : {
-              ...acc,
-              [levelKey]: feature,
-            };
+        const newAcc = {
+          ...acc,
+          [levelKey]: existingData
+            ? (union(existingData, feature) as GeoJsonBoundary)
+            : feature,
+        };
         return newAcc;
       } catch {
         return acc;
@@ -147,6 +145,12 @@ function BoundaryLayer({ layer }: { layer: BoundaryLayerProps }) {
   lineWidthCaseExpression.push(0.5);
 
   console.log(lineWidthCaseExpression);
+
+  const merged = polygonDissolve(
+    data as FeatureCollection<Polygon | MultiPolygon>,
+  );
+
+  console.log({ merged });
 
   return (
     <GeoJSONLayer
