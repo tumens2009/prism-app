@@ -204,7 +204,7 @@ def calculate_stats(
             over_threshold = int(
                 masked[masked > overlap_threshold].count()
             )
-            return over_threshold / total
+            return over_threshold / total if total else 0
         add_stats = {'percentage_over_threshold': percentage_over_threshold}
 
     try:

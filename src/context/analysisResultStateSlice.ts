@@ -29,6 +29,7 @@ import {
   scaleAndFilterAggregateData,
   ExposedPopulationResult,
   scaleFeatureStat,
+  getAnalysisType,
 } from '../utils/analysis-utils';
 import { getWCSLayerUrl } from './layers/wms';
 import { getBoundaryLayerSingleton, LayerDefinitions } from '../config/utils';
@@ -39,7 +40,7 @@ import { DataRecord, AdminLevelDataLayerData } from './layers/admin_level_data';
 import { BoundaryLayerData } from './layers/boundary';
 import { isLocalhost } from '../serviceWorker';
 
-const ANALYSIS_API_URL = 'https://prism-api.ovio.org/stats'; // TODO both needs to be stored somewhere
+const ANALYSIS_API_URL = 'http://localhost/stats'; // TODO both needs to be stored somewhere
 
 export type TableRowType = { [key: string]: string | number };
 export type TableData = {
@@ -205,6 +206,8 @@ const createAPIRequestParams = (
     }),
     zones_url: getAdminBoundariesURL(),
     group_by: groupBy,
+    // TODO - remove hardcode.
+    overlap_threshold: 0.9,
     ...wfsParams,
   };
 
@@ -241,6 +244,8 @@ export const requestAndStoreExposedPopulation = createAsyncThunk<
     ANALYSIS_API_URL,
     apiRequest,
   )) as Feature[];
+
+  console.log(apiFeatures);
 
   const { scale, offset } = populationLayer.wcsConfig ?? {
     scale: undefined,
@@ -303,13 +308,28 @@ export const requestAndStoreAnalysis = createAsyncThunk<
     date,
     baselineLayer,
   );
+  const hazardLayerType = getAnalysisType(hazardLayer);
 
-  const aggregateData = scaleAndFilterAggregateData(
-    await fetchApiData(ANALYSIS_API_URL, apiRequest),
-    hazardLayer,
-    statistic,
-    threshold,
-  );
+  let aggregateData: ReturnType<typeof scaleAndFilterAggregateData>;
+
+  if (hazardLayerType === 'raster') {
+    // eslint-disable-next-line fp/no-mutation
+    aggregateData = scaleAndFilterAggregateData(
+      await fetchApiData(ANALYSIS_API_URL, apiRequest),
+      hazardLayer,
+      statistic,
+      threshold,
+    );
+  } else if (hazardLayerType === 'vector') {
+    // eslint-disable-next-line fp/no-mutation
+    aggregateData = [];
+  } else {
+    // eslint-disable-next-line fp/no-mutation
+    aggregateData = [];
+  }
+
+  console.log(aggregateData);
+
   let loadedAndCheckedBaselineData: BaselineLayerData;
   // if the baselineData doesn't exist, lets load it, otherwise check then load existing data.
   // similar code can be found at impact.ts

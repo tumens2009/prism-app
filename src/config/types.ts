@@ -293,6 +293,7 @@ export enum AggregationOperations {
   Mean = 'mean',
   Median = 'median',
   Sum = 'sum',
+  PercentageOverlap = 'percentage_over_threshold',
 }
 
 export type ThresholdDefinition = { below?: number; above?: number };
