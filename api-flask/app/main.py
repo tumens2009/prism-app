@@ -52,7 +52,7 @@ def _calculate_stats(zones,
                      group_by,
                      geojson_out,
                      wfs_response,
-                     overlap_threshold):
+                     intersect_threshold):
     """Calculate stats."""
     return calculate_stats(
         zones,
@@ -62,7 +62,7 @@ def _calculate_stats(zones,
         group_by=group_by,
         geojson_out=geojson_out,
         wfs_response=wfs_response,
-        overlap_threshold=overlap_threshold
+        intersect_threshold=intersect_threshold
     )
 
 
@@ -77,7 +77,7 @@ def stats():
     geotiff_url = data.get('geotiff_url')
     zones_url = data.get('zones_url')
     zones_geojson = data.get('zones')
-    overlap_threshold = data.get('overlap_threshold')
+    intersect_threshold = data.get('intersect_threshold')
 
     if geotiff_url is None:
         logger.error('Received {}'.format(data))
@@ -134,7 +134,7 @@ def stats():
         group_by=group_by,
         geojson_out=geojson_out,
         wfs_response=wfs_response,
-        overlap_threshold=overlap_threshold
+        intersect_threshold=intersect_threshold
     )
 
     return jsonify(features)
@@ -254,7 +254,7 @@ def stats_demo():
 
     geojson_out = strtobool(geojson_out)
 
-    overlap_threshold = 0.1
+    intersect_threshold = request.args.get('intersect_threshold', None)
 
     features = _calculate_stats(
         zones,
@@ -264,7 +264,7 @@ def stats_demo():
         group_by=group_by,
         geojson_out=geojson_out,
         wfs_response=None,
-        overlap_threshold=overlap_threshold
+        intersect_threshold=intersect_threshold
     )
 
     # TODO - Properly encode before returning. Mongolian characters are returned as hex.

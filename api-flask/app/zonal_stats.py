@@ -177,7 +177,7 @@ def calculate_stats(
     prefix='stats_',
     geojson_out=False,
     wfs_response=None,
-    overlap_threshold=None,
+    intersect_threshold=None,
 ):
     """Calculate stats."""
     if group_by:
@@ -198,11 +198,11 @@ def calculate_stats(
 
     # Add function to calculate overlap percentage.
     add_stats = None
-    if overlap_threshold:
+    if intersect_threshold:
         def percentage_over_threshold(masked):
             total = int(masked.count())
             over_threshold = int(
-                masked[masked > overlap_threshold].count()
+                masked[masked > intersect_threshold].count()
             )
             return over_threshold / total if total else 0
         add_stats = {'percentage_over_threshold': percentage_over_threshold}

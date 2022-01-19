@@ -205,7 +205,7 @@ export type ApiData = {
   group_by: string;
   geojson_out?: boolean;
   wfs_params?: WfsRequestParams;
-  overlap_threshold?: number;
+  intersect_threshold?: number;
 };
 
 /* eslint-disable camelcase */
@@ -215,7 +215,7 @@ export type AlertRequest = {
   email: string;
   max?: number;
   min?: number;
-  overlap_threshold?: number;
+  intersect_threshold?: number;
   prism_url: string;
   zones: object;
 };

@@ -207,7 +207,7 @@ const createAPIRequestParams = (
     zones_url: getAdminBoundariesURL(),
     group_by: groupBy,
     // TODO - remove hardcode.
-    overlap_threshold: 0.9,
+    intersect_threshold: 0.9,
     ...wfsParams,
   };
 
