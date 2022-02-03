@@ -19,6 +19,8 @@ from flask_caching import Cache
 
 from flask_cors import CORS
 
+from flask_restx import Resource, Api
+
 import rasterio
 
 from werkzeug.exceptions import BadRequest, InternalServerError, NotFound
@@ -32,6 +34,8 @@ app.config['JSON_AS_ASCII'] = False
 app.config['PROPAGATE_EXCEPTIONS'] = True
 app.debug = True
 CORS(app)
+
+api = Api(app)
 
 # For more configuration options, check out the documentation
 # Caching durations are in seconds.
