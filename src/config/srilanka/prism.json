@@ -27,6 +27,10 @@
   ], 
   "categories": {
     "rainfall": {
+      "blended_products": [
+        "precip_blended_dekad",
+        "precip_blended_dekad_anomaly"
+      ],
       "rainfall_amount": [
         "rainfall_dekad",
         "rainfall_agg_month",
