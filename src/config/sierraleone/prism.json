@@ -21,6 +21,10 @@
     "longitude": -11.818,
     "zoom": 7.0
   },
+  "defaultDisplayBoundaries": [
+    "admin_boundaries",
+    "admin1_boundary"
+  ],
   "categories": {
     "rainfall": {
       "rainfall_amount": [
@@ -62,7 +66,20 @@
         "lst_amplitude"
       ]
     },
-    "vulnerability": {},
-    "exposure": {}
+    "vulnerability": {
+      "food_insecurity":[
+        "food_insecurity"
+      ],
+      "poverty":[
+        "poverty",
+        "extreme_poverty"
+      ],
+      "nutrition":[
+        "stunting",
+        "underweight",
+        "gam",
+        "sam"
+      ]
+    }
   }
 }
