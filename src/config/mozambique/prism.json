@@ -7,7 +7,8 @@
     "temperature": "icon_climate.png",
     "risk": "icon_impact.png",
     "tropical_storms": "icon_tropical_storm.png",
-    "vulnerability": "icon_vulnerable.png"
+    "vulnerability": "icon_vulnerable.png",
+    "agriculture": "icon_agriculture.png"
   },
   "defaultDisplayBoundaries": ["admin_boundaries", "admin1_boundaries"],
   "serversUrls": {
@@ -80,6 +81,9 @@
         "ipc_perc_ph3_projected"
       ],
       "poverty": ["mpi"]
+    },
+    "agriculture": {
+      "crop_extent": ["cropland"]
     }
   }
 }
