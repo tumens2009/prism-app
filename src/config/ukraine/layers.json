@@ -3,7 +3,7 @@
     "type": "boundary",
     "path": "../data/ukraine/ukr_admbnda_adm1_sspe_20220114.json",
     "opacity": 0.8,
-    "admin_code": "ADM1_PCODE",
+    "admin_code": "adm1_id",
     "admin_level_names": [
       "ADM1_EN"
     ],
@@ -25,7 +25,7 @@
     "type": "boundary",
     "path": "../data/ukraine/ukr_admbnda_adm2_sspe_20220114.json",
     "opacity": 0.8,
-    "admin_code": "ADM2_PCODE",
+    "admin_code": "adm2_id",
     "admin_level_names": [
       "ADM1_EN",
       "ADM2_EN"
@@ -1090,6 +1090,21 @@
     "additional_query_params": {
       "styles": "vim_12_0_1"
     },
+    "chart_data": {
+      "url": "https://dev.earthobservation.vam.wfp.org/prism/ukr",
+      "levels": [{
+          "path": "level1",
+          "id": "adm1_id",
+          "name": "ADM1_EN"
+        },
+        {
+          "path": "level2",
+          "id": "adm2_id",
+          "name": "ADM2_EN"
+        }
+      ],
+      "type": "line"
+    },
     "base_url": "https://odc.ovio.org/",
     "date_interval": "days",
     "wcsConfig": {
@@ -1170,6 +1185,21 @@
     "date_interval": "days",
     "additional_query_params": {
       "styles": "viq_12_50_150_new"
+    },
+    "chart_data": {
+      "url": "https://dev.earthobservation.vam.wfp.org/prism/ukr",
+      "levels": [{
+          "path": "level1",
+          "id": "adm1_id",
+          "name": "ADM1_EN"
+        },
+        {
+          "path": "level2",
+          "id": "adm2_id",
+          "name": "ADM2_EN"
+        }
+      ],
+      "type": "line"
     },
     "opacity": 0.7,
     "legend_text": "NDVI Anomaly compared to LTA",
