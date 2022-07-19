@@ -5,6 +5,7 @@ from os import getenv
 from urllib.parse import ParseResult, urlencode, urlunparse
 
 import rasterio
+from app.acled import get_acled_incidents
 from app.caching import cache_file, cache_geojson
 from app.database.alert_database import AlertsDataBase
 from app.database.alert_model import AlchemyEncoder, AlertModel
@@ -159,6 +160,14 @@ class Stats(Resource):
 #     """Get all alerts in current table."""
 #     results = alert_db.readall()
 #     return Response(json.dumps(results, cls=AlchemyEncoder), mimetype='application/json')
+@api.route("/acled")
+class GetAcledIncidents(Resource):
+    """Class get_acled_incidents which takes a get method."""
+
+    def get(self):
+        """Get all form responses."""
+        response = get_acled_incidents()
+        return Response(response, mimetype="application/json")
 
 
 @api.route("/kobo/forms")

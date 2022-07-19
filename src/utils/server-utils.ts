@@ -18,6 +18,7 @@ import {
 import { queryParamsToString } from '../context/layers/point_data';
 import { DEFAULT_DATE_FORMAT } from './name-utils';
 import { createEWSDatesArray } from './ews-utils';
+import { fetchACLEDDates } from './acled-utils';
 
 // Note: PRISM's date picker is designed to work with dates in the UTC timezone
 // Therefore, ambiguous dates (dates passed as string e.g 2020-08-01) shouldn't be calculated from the user's timezone and instead be converted directly to UTC. Possibly with moment.utc(string)
@@ -263,6 +264,8 @@ async function getPointDataCoverage(layer: PointDataLayerProps) {
   switch (loader) {
     case PointDataLoader.EWS:
       return createEWSDatesArray();
+    case PointDataLoader.ACLED:
+      return fetchACLEDDates(url);
     default:
       break;
   }

@@ -14,3 +14,5 @@ services:
       - KOBO_PW
       # Alerts database
       - DATABASE_URL
+      - ACLED_API_KEY
+      - ACLED_API_EMAIL

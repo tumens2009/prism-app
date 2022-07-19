@@ -107,7 +107,10 @@ type Country = keyof typeof configMap;
 
 const DEFAULT: Country = 'myanmar';
 
-const { REACT_APP_COUNTRY: COUNTRY } = process.env;
+const {
+  REACT_APP_COUNTRY: COUNTRY,
+  REACT_APP_ACLED_API_ISO: ACLED_ISO,
+} = process.env;
 const safeCountry =
   COUNTRY && has(configMap, COUNTRY.toLocaleLowerCase())
     ? (COUNTRY.toLocaleLowerCase() as Country)
@@ -164,4 +167,5 @@ export {
   msalRequest,
   enableNavigationDropdown,
   translation,
+  ACLED_ISO,
 };

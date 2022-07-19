@@ -67,7 +67,8 @@
       "vulnerable_populations": [
         "age_dependency_ratio",
         "female_headed_hhs",
-        "disability_prev_rate"
+        "disability_prev_rate",
+        "acled_incidents"
       ],
       "living_conditions": [
         "improved_sanitation",
