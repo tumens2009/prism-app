@@ -1,0 +1,65 @@
+{
+  "country": "Global",
+  "alertFormActive": false,
+  "icons": {
+    "rainfall": "icon_rain.png",
+    "vegetation": "icon_veg.png",
+    "temperature": "icon_climate.png"
+  },
+  "serversUrls": {
+    "wms": [
+      "https://odc.ovio.org/wms"
+    ]
+  },
+  "map": {
+    "latitude": 1.8,
+    "longitude": 29.9,
+    "zoom": 1.76
+  },
+  "categories": {
+    "rainfall": {
+      "aggregations": [
+        "rfh_16_0_300",
+        "rfh_16_0_400",
+        "rfh_16_0_600",
+        "rfh_16_0_800",
+        "rfh_16_0_1000",
+        "rfh_16_0_1600",
+        "rfh_16_0_1000",
+        "rfh_16_0_2000",
+        "rfh_16_0_2400",
+        "rfh_16_0_4000"
+      ],
+      "anomalies": [
+        "rfq_14_20_400",
+        "ryq_14_50_200"
+      ],
+      "indicators": [
+        "xlhie_12_0_10",
+        "xnhie_12_0_14",
+        "dlx_13_0_26",
+        "dlx_13_0_40"
+      ]
+    },
+    "vegetation": {
+      "ndvi_anomaly": [
+        "viq_13_50_150"
+      ],
+      "ndvi": [
+        "vim_14_01_09"
+      ]
+    },
+    "temperature": {
+      "land_surface_temperature": [
+        "lst_42_n24_70"
+      ],
+      "lst_anomaly": [
+        "tdd_tnd_21_m20_20",
+        "tdd_tnd_21_m12_12"
+      ],
+      "lst_amplitude": [
+        "taa_21_1_48"
+      ]
+    }
+  }
+}

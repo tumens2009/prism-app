@@ -4,6 +4,10 @@ import { PublicClientApplication } from '@azure/msal-browser';
 
 import cambodia from './cambodia';
 
+import colortest from './colortest';
+
+import colorupdate from './colorupdate';
+
 import cuba from './cuba';
 
 import ecuador from './ecuador';
@@ -59,6 +63,8 @@ const DEFAULT_BOUNDARIES_FOLDER =
 const configMap = {
   cuba,
   cambodia,
+  colortest,
+  colorupdate,
   ecuador,
   global: {
     appConfig: globalConfig,
