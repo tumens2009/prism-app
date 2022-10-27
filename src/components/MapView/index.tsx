@@ -13,14 +13,17 @@ import {
   WithStyles,
   withStyles,
 } from '@material-ui/core';
-import { countBy, get, pickBy } from 'lodash';
+import { countBy, get, pickBy, sortBy } from 'lodash';
 import moment from 'moment';
 // map
 import ReactMapboxGl from 'react-mapbox-gl';
 import { Map, MapSourceDataEvent } from 'mapbox-gl';
 import bbox from '@turf/bbox';
+import bboxPolygon from '@turf/bbox-polygon';
+import union from '@turf/union';
 import inside from '@turf/boolean-point-in-polygon';
-import type { Feature, MultiPolygon } from '@turf/helpers';
+import type { Feature, MultiPolygon, Polygon } from '@turf/helpers';
+import { multiPolygon } from '@turf/helpers';
 import MapTooltip from './MapTooltip';
 import Legends from './Legends';
 import Download from './Download';
@@ -203,6 +206,136 @@ function MapView({ classes }: MapViewProps) {
   const boundaryLayerData = useSelector(layerDataSelector(boundaryLayer.id)) as
     | LayerData<BoundaryLayerProps>
     | undefined;
+
+  const { adminLevelNames } = boundaryLayer;
+
+  const featureProps =
+    boundaryLayerData &&
+    boundaryLayerData.data.features.map(feature => {
+      const { properties, geometry } = feature;
+
+      if (!properties) {
+        return undefined;
+      }
+
+      const names = adminLevelNames.reduce(
+        (acc, item) => ({
+          ...acc,
+          [item]: properties[item],
+        }),
+        {} as any,
+      );
+
+      const featureBbox = bbox(
+        multiPolygon((geometry as MultiPolygon).coordinates),
+      );
+
+      return { ...names, bbox: featureBbox };
+    });
+
+  type BoundaryItem = {
+    name: string;
+    children: string[];
+    bbox: number[];
+  };
+
+  const ordered = sortBy(featureProps, adminLevelNames);
+  const itemsInHierarchy: BoundaryItem[] = ordered.reduce(
+    (boundariesArray, feature) => {
+      const itemsToAdd: Array<BoundaryItem | undefined> = adminLevelNames.map(
+        (adminLevelName, index) => {
+          const value = feature[adminLevelName];
+
+          if (
+            boundariesArray
+              .map((boundary: BoundaryItem) => boundary.name)
+              .includes(value)
+          ) {
+            return undefined;
+          }
+
+          // Search for all the items and append it into an array.
+          const matches = ordered.filter(b => b[adminLevelName] === value);
+
+          const bboxPolygons = matches
+            .map(c => c.bbox)
+            .map(box => bboxPolygon(box));
+
+          const unionGeom = bboxPolygons.reduce((unionPolygon, polygon) => {
+            const unionObj = union(unionPolygon, polygon);
+            if (!unionObj) {
+              return unionPolygon;
+            }
+            return unionObj as Feature<Polygon>;
+          }, bboxPolygons[0]);
+
+          const children: string[] = [
+            ...new Set(
+              matches.map(m => m[adminLevelNames[index + 1]]).filter(m => m),
+            ),
+          ];
+
+          return {
+            name: value,
+            children: children.filter(c => c !== value),
+            level: index + 1,
+            bbox: bbox(unionGeom),
+          };
+        },
+      );
+
+      const filteredBoundaryItems = itemsToAdd
+        .filter(i => i !== undefined)
+        .map(i => i as BoundaryItem);
+
+      /* eslint-disable */
+      /* eslint-enable */
+
+      return [...boundariesArray, ...filteredBoundaryItems];
+    },
+    [],
+  );
+
+  const getFeatures = (
+    hierarchy: any[],
+    name: string,
+    level: number,
+  ): any[] => {
+    const item = hierarchy.find(i => i.level === level && i.name === name);
+
+    if (!item) {
+      return [];
+    }
+
+    const { level: itemLevel, name: itemName, children } = item;
+
+    console.log(item);
+
+    return [
+      { level: itemLevel, name: itemName },
+      ...children
+        .map((c: string) => getFeatures(hierarchy, c, level + 1))
+        .reduce((acc: any, child: any) => [...acc, ...child], []),
+    ];
+
+    /*
+    return hierarchy.reduce((acc, item) => {
+      const { level, name, children } = item;
+
+      console.log(item);
+
+      return children.length === 0
+        ? [...acc, { name, level }]
+        : [...acc, getFeatures(children, level + 1)];
+    }, [] as any[]);
+    */
+  };
+
+  const results = getFeatures(itemsInHierarchy, 'Banteay Meanchey', 1);
+
+  console.log(results);
+
+  //console.log();
 
   const adminBoundariesExtent = useMemo(() => {
     if (!boundaryLayerData) {
