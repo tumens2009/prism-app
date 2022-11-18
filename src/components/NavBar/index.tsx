@@ -16,7 +16,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
-import wfpLogo from '../images/wfp_logo_small.png';
+import wfpLogo from '../images/wfp_bappenas_logo.png';
 import MenuItem from './MenuItem';
 import MenuItemMobile from './MenuItemMobile';
 import { menuList } from './utils';
@@ -159,7 +159,7 @@ const styles = (theme: Theme) =>
     },
 
     orgLogo: {
-      width: 28,
+      height: 28,
       marginRight: 15,
     },
 
