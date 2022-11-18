@@ -107,10 +107,158 @@ export const getParentRelation = (
   ];
 };
 
+type PropertyName = {
+  adminLevelNameProperty: string;
+  adminLevelNamePropertyChild: string;
+  adminLevelNamePropertyParent: string;
+};
+
+type AdminLevelObject = {
+  level: number;
+  names: AdminLevelName[];
+};
+
+type AdminLevelProperty = {
+  key: string;
+  value: string;
+};
+
+type AdminLevelName = {
+  name: AdminLevelProperty;
+  parent: AdminLevelProperty;
+  child: AdminLevelProperty;
+};
+
+const getAdminLevelValueSet = (
+  features: Feature<MultiPolygon>[],
+  propertyName: PropertyName,
+): AdminLevelName[] => {
+  const {
+    adminLevelNameProperty,
+    adminLevelNamePropertyParent,
+    adminLevelNamePropertyChild,
+  } = propertyName;
+
+  // Get all possible values for the given adminLevelNameProperty.
+  const values: AdminLevelName[] = features.map(feature => ({
+    name: {
+      key: adminLevelNameProperty,
+      value: feature.properties![adminLevelNameProperty],
+    },
+    parent: {
+      key: adminLevelNamePropertyParent,
+      value: feature.properties![adminLevelNamePropertyParent],
+    },
+    child: {
+      key: adminLevelNamePropertyChild,
+      value: feature.properties![adminLevelNamePropertyChild],
+    },
+  }));
+
+  const valueSet: AdminLevelName[] = values.reduce((set, item) => {
+    if (
+      set.find(
+        itemSet =>
+          item.name.value === itemSet.name.value &&
+          item.parent.value === itemSet.parent.value,
+      )
+    ) {
+      return set;
+    }
+
+    return [...set, item];
+  }, [] as AdminLevelName[]);
+
+  return valueSet;
+};
+
+const createRelationObj = (
+  features: Feature<MultiPolygon>[],
+  adminLevelName: AdminLevelName,
+  level: number,
+): BoundaryRelation => {
+  const { name, parent, child } = adminLevelName;
+
+  const matches = features
+    .filter(
+      feature =>
+        feature.properties![name.key] === name.value &&
+        feature.properties![parent.key] === parent.value,
+    )
+    .map(feature => feature as Feature<MultiPolygon>);
+
+  // Create Bbox
+  const unionGeom = matches.reduce((unionGeometry, match) => {
+    const unionObj = union(unionGeometry, match);
+    if (!unionObj) {
+      return unionGeometry;
+    }
+    return unionObj as Feature<MultiPolygon>;
+  }, matches[0]);
+
+  const bboxUnion: BBox = bbox(unionGeom);
+
+  // Get childrens.
+  const children: string[] = matches
+    .map(feature => feature.properties![child.key])
+    .reduce((childrenSet, featureName) => {
+      if (featureName === undefined || childrenSet.includes(featureName)) {
+        return childrenSet;
+      }
+
+      return [...childrenSet, featureName];
+    }, []);
+
+  const parentNames: string[] = [
+    ...new Set(matches.map(match => match.properties![parent.key])),
+  ];
+
+  // Parent names should be the same.
+  return {
+    name: name.value,
+    parent: parentNames[0],
+    level,
+    children,
+    bbox: bboxUnion,
+  };
+};
+
+const buildRelationTree = (
+  boundaryLayerData: BoundaryLayerData,
+  adminLevelNames: string[],
+): any => {
+  const { features } = boundaryLayerData;
+  const featuresMulti = features as Feature<MultiPolygon>[];
+
+  const propertyNames: PropertyName[] = adminLevelNames.map((_, index) => ({
+    adminLevelNameProperty: adminLevelNames[index],
+    adminLevelNamePropertyChild: adminLevelNames[index + 1],
+    adminLevelNamePropertyParent: adminLevelNames[index - 1],
+  }));
+
+  const adminLevelObjects: AdminLevelObject[] = propertyNames.map(
+    (propertyName, index) => ({
+      level: index,
+      names: getAdminLevelValueSet(featuresMulti, propertyName),
+    }),
+  );
+
+  const adminLevelValue = adminLevelObjects[0];
+  const { level, names } = adminLevelValue;
+  const relations = names.map(adminLevelName =>
+    createRelationObj(featuresMulti, adminLevelName, level),
+  );
+  console.log(relations);
+
+  return propertyNames;
+};
+
 export const loadBoundaryRelations = (
   boundaryLayerData: BoundaryLayerData,
   adminLevelNames: string[],
 ): BoundaryRelationData => {
+  const boom = buildRelationTree(boundaryLayerData, adminLevelNames);
+
   const featureRelations = boundaryLayerData.features.reduce((acc, feature) => {
     const relations = getFeatureRelations(adminLevelNames, feature as Feature);
 
