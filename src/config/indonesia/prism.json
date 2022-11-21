@@ -1,6 +1,7 @@
 {
   "country": "Indonesia",
   "icons": {
+    "bappenas": "icon_snow.png",
     "vulnerability": "icon_vulnerable.png",
     "exposure": "icon_basemap.png",
     "hazards": "icon_climate.png",
@@ -13,7 +14,8 @@
     "wcs": [],
     "wms": [
       "https://api.earthobservation.vam.wfp.org/ows/wms",
-      "https://prism-geoserver.wfpidn.link/geoserver/prism/wms"
+      "https://prism-geoserver.wfpidn.link/geoserver/prism/wms",
+      "https://geoservices.bappenas.go.id/arcgis/services/Produksi/HasilPraMusren/MapServer/WMSServer?service=WMS"
     ]
   },
   "map": {
@@ -22,6 +24,11 @@
     "zoom": 4.3
   },
   "categories": {
+    "bappenas": {
+      "jalan": [
+        "bappenas_jalan"
+      ]
+    },
     "hazards": {
       "extreme_rainfall_monitoring": [
         "rainfall_extreme_probability",

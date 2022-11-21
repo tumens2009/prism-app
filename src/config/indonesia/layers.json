@@ -17,6 +17,20 @@
       }
     }
   },
+  "bappenas_jalan": {
+    "title": "Jalan Bappenas",
+    "type": "wms",
+    "server_layer_name": "0,1",
+    "additional_query_params": {
+      "styles": "default,default"
+    },
+    "base_url": "https://geoservices.bappenas.go.id/arcgis/services/Produksi/HasilPraMusren/MapServer/WMSServer",
+    "date_interval": "days",
+    "opacity": 0.7,
+    "legend_text": "Jalan Bappenas",
+    "legend": [
+    ]
+  },
   "rainfall_extreme_probability": {
     "title": "Extreme rainfall (last 5 days)",
     "type": "wms",

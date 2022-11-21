@@ -22,10 +22,10 @@ function WMSLayers({
     ? fromPairs(layerForm.inputs.map(input => [input.id, input.value]))
     : {};
 
-  if (!selectedDate) {
+  const layerAvailableDates = serverAvailableDates[serverLayerName];
+  if (!selectedDate && layerAvailableDates) {
     return null;
   }
-  const layerAvailableDates = serverAvailableDates[serverLayerName];
   const queryDate = getRequestDate(layerAvailableDates, selectedDate);
 
   return (
