@@ -218,6 +218,7 @@ export function formatWMSLegendUrl(baseUrl: string, serverLayerName: string) {
     service: 'WMS',
     request: 'GetLegendGraphic',
     format: 'image/png',
+    version: '1.1.1',
     layer: serverLayerName,
     legend_options: Object.entries(legendOptions)
       .map(([key, value]) => `${key}:${value}`)
