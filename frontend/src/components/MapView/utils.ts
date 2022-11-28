@@ -9,7 +9,10 @@ import {
   uniq,
 } from 'lodash';
 import { Map } from 'mapbox-gl';
-import { LayerDefinitions } from '../../config/utils';
+import {
+  LayerDefinitions,
+  getBoundaryLayerSingleton,
+} from '../../config/utils';
 import { formatFeatureInfo } from '../../utils/server-utils';
 import { getExtent } from './Layers/raster-utils';
 import {
@@ -77,13 +80,17 @@ export const convertToTableData = (result: ExposedPopulationResult) => {
     ? uniq(features.map(f => f.properties && f.properties[key]))
     : [statistic];
 
+  const { adminLevelNames } = getBoundaryLayerSingleton();
+
   const featureProperties = features
     .filter(
       feature => feature.properties?.[key] || feature.properties?.[statistic],
     )
     .map(feature => {
       return {
-        [groupBy]: feature.properties?.[groupBy],
+        [groupBy]: adminLevelNames
+          .map(name => feature.properties?.[name])
+          .join(','),
         [key]: feature.properties?.[key],
         [statistic]: feature.properties?.[statistic],
       };

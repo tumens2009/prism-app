@@ -1,6 +1,11 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { convertArea } from '@turf/helpers';
-import { Position, FeatureCollection, Feature } from 'geojson';
+import {
+  Position,
+  FeatureCollection,
+  Feature,
+  GeoJsonProperties,
+} from 'geojson';
 import moment from 'moment';
 import { get } from 'lodash';
 import { calculate } from '../utils/zonal-utils';
@@ -268,86 +273,135 @@ const createAPIRequestParams = (
 
   return apiRequest;
 };
+const appendBoundaryProperties = (
+  adminCodeId: BoundaryLayerProps['adminCode'],
+  analysisFeatures: Feature[],
+  boundaryLayerProperties: GeoJsonProperties[],
+): Feature[] => {
+  const featuresWithBoundaryProps = analysisFeatures.reduce((acc, feature) => {
+    const matchedProperties = boundaryLayerProperties.find(
+      props => props![adminCodeId] === feature.properties![adminCodeId],
+    );
+
+    if (!matchedProperties) {
+      return acc;
+    }
+
+    const newProps = { ...matchedProperties, ...feature.properties! };
+
+    return [...acc, { ...feature, properties: newProps }];
+  }, [] as Feature[]);
+
+  return featuresWithBoundaryProps;
+};
 
 export const requestAndStoreExposedPopulation = createAsyncThunk<
   AnalysisResult,
   ExposedPopulationDispatchParams,
   CreateAsyncThunkTypes
->('analysisResultState/requestAndStoreExposedPopulation', async params => {
-  const { exposure, date, extent, statistic, wfsLayerId, maskLayerId } = params;
+>(
+  'analysisResultState/requestAndStoreExposedPopulation',
+  async (params, api) => {
+    const {
+      exposure,
+      date,
+      extent,
+      statistic,
+      wfsLayerId,
+      maskLayerId,
+    } = params;
 
-  const { id, key, calc } = exposure;
+    const { id, key, calc } = exposure;
 
-  const wfsLayer =
-    wfsLayerId && (LayerDefinitions[wfsLayerId] as WMSLayerProps);
-  const populationLayer = LayerDefinitions[id] as WMSLayerProps;
+    const wfsLayer =
+      wfsLayerId && (LayerDefinitions[wfsLayerId] as WMSLayerProps);
+    const populationLayer = LayerDefinitions[id] as WMSLayerProps;
 
-  const wfsParams: WfsRequestParams | undefined = wfsLayer
-    ? {
-        url: `${wfsLayer.baseUrl}/ows`,
-        layer_name: wfsLayer.serverLayerName,
-        time: moment(date).format(DEFAULT_DATE_FORMAT),
-        key,
-      }
-    : undefined;
+    const wfsParams: WfsRequestParams | undefined = wfsLayer
+      ? {
+          url: `${wfsLayer.baseUrl}/ows`,
+          layer_name: wfsLayer.serverLayerName,
+          time: moment(date).format(DEFAULT_DATE_FORMAT),
+          key,
+        }
+      : undefined;
 
-  const maskLayer =
-    maskLayerId && (LayerDefinitions[maskLayerId] as WMSLayerProps);
+    const maskLayer =
+      maskLayerId && (LayerDefinitions[maskLayerId] as WMSLayerProps);
 
-  const maskParams = maskLayer
-    ? {
-        mask_url: getWCSLayerUrl({
-          layer: maskLayer,
-          date,
-          extent,
-        }),
-        mask_calc_expr: calc || 'A*(B==1)',
-      }
-    : undefined;
+    const maskParams = maskLayer
+      ? {
+          mask_url: getWCSLayerUrl({
+            layer: maskLayer,
+            date,
+            extent,
+          }),
+          mask_calc_expr: calc || 'A*(B==1)',
+        }
+      : undefined;
 
-  const apiRequest = createAPIRequestParams(
-    populationLayer,
-    extent,
-    date,
-    wfsParams,
-    maskParams,
-    // Set geojsonOut to true.
-    // TODO - Remove the need for the geojson_out parameters. See TODO in zonal_stats.py.
-    true,
-  );
+    const apiRequest = createAPIRequestParams(
+      populationLayer,
+      extent,
+      date,
+      wfsParams,
+      maskParams,
+      // Set geojsonOut to true.
+      // TODO - Remove the need for the geojson_out parameters. See TODO in zonal_stats.py.
+      true,
+    );
 
-  const apiFeatures = ((await fetchApiData(ANALYSIS_API_URL, apiRequest)) ||
-    []) as Feature[];
+    const apiFeatures = ((await fetchApiData(ANALYSIS_API_URL, apiRequest)) ||
+      []) as Feature[];
 
-  const { scale, offset } = populationLayer.wcsConfig ?? {
-    scale: undefined,
-    offset: undefined,
-  };
+    const { scale, offset } = populationLayer.wcsConfig ?? {
+      scale: undefined,
+      offset: undefined,
+    };
 
-  const features = apiFeatures
-    .map(f => scaleFeatureStat(f, scale || 1, offset || 0, statistic))
-    .filter(f => get(f.properties, statistic) != null);
+    const features = apiFeatures
+      .map(f => scaleFeatureStat(f, scale || 1, offset || 0, statistic))
+      .filter(f => get(f.properties, statistic) != null);
 
-  const collection: FeatureCollection = {
-    type: 'FeatureCollection',
-    features,
-  };
+    const {
+      adminCode: adminCodeId,
+      id: boundaryLayerId,
+    } = getBoundaryLayerSingleton();
+    const boundaryData = layerDataSelector(boundaryLayerId)(api.getState()) as
+      | LayerData<BoundaryLayerProps>
+      | undefined;
 
-  const groupBy = apiRequest.group_by;
-  const legend = createLegendFromFeatureArray(features, statistic);
-  // TODO - use raster legend title
-  const legendText = wfsLayer ? wfsLayer.title : 'Exposure Analysis';
+    const boundaryLayerProperties: GeoJsonProperties[] = boundaryData!.data.features.map(
+      feature => feature.properties as GeoJsonProperties,
+    );
 
-  return new ExposedPopulationResult(
-    collection,
-    statistic,
-    legend,
-    legendText,
-    groupBy,
-    key,
-    date,
-  );
-});
+    const featuresWithBoundaryProps = appendBoundaryProperties(
+      adminCodeId,
+      features,
+      boundaryLayerProperties,
+    );
+
+    const collection: FeatureCollection = {
+      type: 'FeatureCollection',
+      features: featuresWithBoundaryProps,
+    };
+
+    const groupBy = apiRequest.group_by;
+    const legend = createLegendFromFeatureArray(features, statistic);
+    // TODO - use raster legend title
+    const legendText = wfsLayer ? wfsLayer.title : 'Exposure Analysis';
+
+    return new ExposedPopulationResult(
+      collection,
+      statistic,
+      legend,
+      legendText,
+      groupBy,
+      key,
+      date,
+    );
+  },
+);
 
 export const requestAndStoreAnalysis = createAsyncThunk<
   AnalysisResult,
