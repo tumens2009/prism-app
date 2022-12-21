@@ -1,5 +1,6 @@
 import React from 'react';
 import * as Sentry from '@sentry/browser';
+import { BrowserTracing } from '@sentry/tracing';
 import { useIsAuthenticated } from '@azure/msal-react';
 import { ThemeProvider } from '@material-ui/core/styles';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
@@ -15,15 +16,24 @@ import muiTheme from '../../muiTheme';
 import Notifier from '../Notifier';
 import AuthModal from '../AuthModal';
 
-if (process.env.NODE_ENV && process.env.NODE_ENV !== 'development') {
-  if (process.env.REACT_APP_SENTRY_URL) {
-    Sentry.init({ dsn: process.env.REACT_APP_SENTRY_URL });
-  } else {
-    console.warn(
-      'Sentry could not start. Make sure the REACT_APP_SENTRY_URL environment variable is set.',
-    );
-  }
-}
+Sentry.init({
+  dsn: process.env.REACT_APP_SENTRY_URL,
+  integrations: [new BrowserTracing()],
+  tracesSampleRate: 1.0,
+});
+// if (process.env.NODE_ENV && process.env.NODE_ENV !== 'development') {
+//   if (process.env.REACT_APP_SENTRY_URL) {
+//     Sentry.init({
+//       dsn: process.env.REACT_APP_SENTRY_URL,
+//       integrations: [new BrowserTracing()],
+//       tracesSampleRate: 1.0,
+//     });
+//   } else {
+//     console.warn(
+//       'Sentry could not start. Make sure the REACT_APP_SENTRY_URL environment variable is set.',
+//     );
+//   }
+// }
 
 // https://github.com/diegomura/react-pdf/issues/1991
 Font.register({

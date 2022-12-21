@@ -6,6 +6,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import * as Sentry from '@sentry/browser';
 import { useSelector } from 'react-redux';
 import {
   Button,
@@ -195,6 +196,8 @@ function DateSelector({
 
   // Click on available date to move the pointer
   const clickDate = (index: number) => {
+    const transaction = Sentry.startTransaction({ name: 'timeline' });
+    const span = transaction.startChild({ op: 'timeline.clickDate' });
     const dates = availableDates.map(date => {
       return date + USER_DATE_OFFSET;
     });
@@ -203,6 +206,9 @@ function DateSelector({
       setPointerPosition({ x: index * TIMELINE_ITEM_WIDTH, y: 0 });
       updateStartDate(new Date(dates[selectedIndex]));
     }
+    span.setStatus('ok');
+    span.finish();
+    transaction.finish();
   };
 
   // Set timeline position after being dragged

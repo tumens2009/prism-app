@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/browser';
 import { createAsyncThunk, AsyncThunk } from '@reduxjs/toolkit';
 import {
   DiscriminateUnion,
@@ -87,8 +88,11 @@ export const loadLayerData: LoadLayerDataFuncType = createAsyncThunk<
     point_data: fetchPointLayerData,
   };
   const lazyLoad: LazyLoader<any> = layerLoaders[layer.type];
+  const transaction = Sentry.startTransaction({ name: 'loadLayerData' });
+  const span = transaction.startChild({ op: 'loadLayerData' });
   try {
     const layerData = await lazyLoad(loadLayerData)(params, thunkApi);
+    span.setStatus('ok');
     // Need to cast this since TS isn't smart enough to match layer & layerData types based on the nested discriminator
     // field `layer.type`.
     return {
@@ -98,12 +102,16 @@ export const loadLayerData: LoadLayerDataFuncType = createAsyncThunk<
       data: layerData,
     } as LayerDataTypes;
   } catch (err) {
+    span.setStatus('unknown_error');
     const error = err as Error;
     throw new Error(
       `Failed to load layer: ${layer.id}. ${
         error?.message ? error.message : 'Check console for more details.'
       }`,
     );
+  } finally {
+    span.finish();
+    transaction.finish();
   }
 });
 
