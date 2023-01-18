@@ -16,7 +16,8 @@ import {
   layersSelector,
   relationSelector,
 } from '../../../../context/mapStateSlice/selectors';
-import { setRelationData } from '../../../../context/mapStateSlice';
+
+import { loadBoundaryRelationsThunk } from '../../../../context/mapStateSlice';
 import {
   loadBoundaryRelations,
   BoundaryRelationData,
@@ -66,15 +67,12 @@ function BoundaryLayer({ layer, before }: ComponentProps) {
         ? layer.adminLevelNames
         : layer.adminLevelLocalNames;
 
-    loadBoundaryRelations(data, locationLevelNames).then(
-      (relations: BoundaryRelationData) => {
-        const dataDict = {
-          ...boundaryRelationDataDict,
-          [i18nLocale.language]: relations,
-        };
-
-        dispatch(setRelationData(dataDict));
-      },
+    dispatch(
+      loadBoundaryRelationsThunk({
+        boundaryLayerData: data,
+        adminLevelNames: locationLevelNames,
+        language: i18nLocale.language,
+      }),
     );
   }, [
     data,

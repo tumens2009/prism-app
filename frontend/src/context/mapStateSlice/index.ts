@@ -1,9 +1,15 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { Map as MapBoxMap } from 'mapbox-gl';
-import { LayerKey, LayerType } from '../../config/types';
+import { LayerKey, LayerType, BoundaryLayerProps } from '../../config/types';
 import { LayerDefinitions } from '../../config/utils';
 import { LayerData, LayerDataTypes, loadLayerData } from '../layers/layer-data';
-import { BoundaryRelationsDict } from '../../components/Common/BoundaryDropdown/utils';
+import {
+  BoundaryRelationsDict,
+  loadBoundaryRelations,
+  BoundaryRelationData,
+} from '../../components/Common/BoundaryDropdown/utils';
+import type { CreateAsyncThunkTypes } from '../store';
+import { BoundaryLayerData } from '../layers/boundary';
 
 interface DateRange {
   startDate?: number;
@@ -47,6 +53,27 @@ function keepLayer(layer: LayerType, payload: LayerType) {
     (payload.type !== layer.type || payload.type === 'boundary')
   );
 }
+
+type BoundaryRelationParams = {
+  boundaryLayerData: BoundaryLayerData;
+  adminLevelNames: BoundaryLayerProps['adminLevelNames'];
+  language: string;
+};
+
+export const loadBoundaryRelationsThunk = createAsyncThunk<
+  BoundaryRelationsDict,
+  BoundaryRelationParams,
+  CreateAsyncThunkTypes
+>('mapState/loadBoundaryRelations', (params: BoundaryRelationParams) => {
+  const relationData = loadBoundaryRelations(
+    params.boundaryLayerData,
+    params.adminLevelNames,
+  );
+
+  const dataDict = { [params.language]: relationData };
+
+  return new Promise(resolve => resolve(dataDict));
+});
 
 export const mapStateSlice = createSlice({
   name: 'mapState',
@@ -131,6 +158,14 @@ export const mapStateSlice = createSlice({
     }),
   },
   extraReducers: builder => {
+    builder.addCase(
+      loadBoundaryRelationsThunk.fulfilled,
+      (state, { payload }: PayloadAction<BoundaryRelationsDict>) => ({
+        ...state,
+        relationData: { ...state.relationData, ...payload },
+      }),
+    );
+
     builder.addCase(
       loadLayerData.fulfilled,
       (
