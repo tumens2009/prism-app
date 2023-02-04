@@ -31,7 +31,10 @@
   "categories": {
     "flood": {
       "flood_monitoring": ["flood_extent"],
-      "flood_risk": ["flood_hazard"],
+      "flood_frequency": [
+          "flood_freq_commune",
+          "flood_freq_index"
+      ],
       "early_warning": ["ews_remote"]
     },
     "rainfall": {

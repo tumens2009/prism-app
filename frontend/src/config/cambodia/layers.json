@@ -187,8 +187,8 @@
     ],
     "legend_text": "This layer shows number of households of IDPoor level 2 at commune level. The identification of poor households (IDPoor) is established to collect and share poor household information nationwide in order to enhance targeting services and assistance for poverty reduction."
   },
-  "flood_hazard": {
-    "title": "Flood hazard index",
+  "flood_freq_commune": {
+    "title": "Flood frequency by commune",
     "type": "admin_level_data",
     "path": "data/cambodia/flood-hazard-index.json",
     "data_field": "flood_hazard_index",
@@ -1271,6 +1271,17 @@
     "opacity": 0,
     "legend_text": "",
     "legend": []
+  },
+  "flood_freq_index": {
+    "title": "Flood frequency index",
+    "type": "static_raster",
+    "base_url": "https://prism-raster-tiles.s3.amazonaws.com/khm-flood-frequency-index/{z}/{x}/{y}.png",
+    "opacity": 1.0,
+    "legend_text": "The flood frequency index represents the number of times water was detected outside of seasonal and permanent bodies of water over the course of satellite observations. A higher / darker value represents more frequent flooding",
+    "min_zoom": 0,
+    "max_zoom": 12,
+    "legend": [
+    ]
   },
   "flood_extent": {
     "title": "Flood extent",
